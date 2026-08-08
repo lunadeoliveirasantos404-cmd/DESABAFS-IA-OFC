@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#06130f">
+<title>DESABAF'S</title>
+<style>
+:root{--bg:#06130f;--card:#0b2119;--card2:#102c22;--line:#234438;--text:#effff7;--muted:#91b5a5;--green:#63e6a4;--green2:#2bb673;--user:#174a37}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -15%,#185039,transparent 40%),linear-gradient(145deg,#03100b,#06130f 55%,#081a13);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,sans-serif}
+.app{width:min(100%,900px);min-height:100vh;margin:auto;padding:14px;display:flex;flex-direction:column}
+header{display:flex;justify-content:space-between;align-items:center;padding:8px 2px 14px}.brand{display:flex;align-items:center;gap:11px}.logo{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--green),var(--green2));display:grid;place-items:center;color:#062016;font-weight:900;font-size:21px}.brand h1{font-size:19px;margin:0;letter-spacing:.05em}.brand p{font-size:11px;color:var(--muted);margin:2px 0}.actions{display:flex;gap:7px}.icon{width:39px;height:39px;border:1px solid var(--line);border-radius:12px;background:#ffffff08;color:#ccebdd;font-size:18px}
+.card{flex:1;min-height:calc(100vh - 100px);border:1px solid var(--line);border-radius:24px;background:#0b2119e8;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 25px 90px #0008}
+.welcome{text-align:center;padding:60px 20px 30px;margin:auto;max-width:680px}.heart{width:64px;height:64px;margin:auto auto 17px;border-radius:20px;display:grid;place-items:center;background:#63e6a416;border:1px solid #63e6a433;color:var(--green);font-size:30px}.welcome h2{font-size:38px;letter-spacing:-.04em;margin:0 0 8px}.welcome p{color:var(--muted);line-height:1.6;margin:0 auto 23px}.chips{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}.chips button{border:1px solid var(--line);background:#ffffff07;color:#cde8dc;border-radius:999px;padding:10px 13px}
+.messages{flex:1;overflow:auto;padding:22px 18px;display:flex;flex-direction:column;gap:13px}.message{display:flex;gap:8px;max-width:85%;animation:in .2s ease}.message.user{margin-left:auto;flex-direction:row-reverse}.avatar{width:31px;height:31px;flex:none;border-radius:10px;background:#173d2f;color:var(--green);display:grid;place-items:center;font-size:10px;font-weight:800}.bubble{border:1px solid var(--line);padding:12px 14px;border-radius:17px;background:#10281f;line-height:1.55;font-size:14px;white-space:pre-wrap;overflow-wrap:anywhere}.user .bubble{background:var(--user);border-top-right-radius:6px}.assistant .bubble{border-top-left-radius:6px}
+.composer{margin:0 11px 8px;border:1px solid var(--line);background:#0003;border-radius:18px;padding:9px;display:flex;align-items:end;gap:8px}textarea{flex:1;resize:none;max-height:140px;border:0;outline:0;background:transparent;color:var(--text);padding:9px;line-height:1.45}textarea::placeholder{color:#668879}#send{width:44px;height:44px;border:0;border-radius:13px;background:var(--green);color:#062016;font-size:23px;font-weight:900}.note{text-align:center;color:#668879;font-size:10px;padding:0 0 12px}.hidden{display:none!important}
+footer{text-align:center;color:#5d7b6e;font-size:10px;padding:10px}
+@keyframes in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+@media(max-width:600px){.app{padding:9px}.card{border-radius:19px}.welcome{padding:42px 16px 20px}.welcome h2{font-size:31px}.messages{padding:17px 10px}.message{max-width:92%}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="brand"><div class="logo">D</div><div><h1>DESABAF'S</h1><p>Um espaço para colocar pra fora.</p></div></div>
+<div class="actions"><button class="icon" id="clear" title="Apagar conversa">⌫</button></div>
+</header>
+<section class="card">
+<div class="welcome" id="welcome">
+<div class="heart">♡</div><h2>Pode falar.</h2>
+<p>Conte o que estiver passando pela sua cabeça. O DESABAF'S vai ler e responder com carinho, sem julgamentos.</p>
+<div class="chips">
+<button data-t="Hoje foi um dia difícil e eu queria desabafar.">Hoje foi difícil...</button>
+<button data-t="Estou preocupado(a) com uma coisa e não sei o que fazer.">Estou preocupado(a)...</button>
+<button data-t="Quero uma opinião sobre uma situação que aconteceu comigo.">Quero um conselho...</button>
+</div></div>
+<div class="messages" id="messages"></div>
+<form class="composer" id="form"><textarea id="input" rows="1" maxlength="5000" placeholder="Escreva seu desabafo..."></textarea><button id="send">➜</button></form>
+<div class="note">Enter envia · Shift + Enter quebra a linha · seu histórico fica salvo neste navegador</div>
+</section>
+<footer>DESABAF'S • conversa local</footer>
+</div>
+<script>
+const KEY="DESABAFS_DIRECT_V1";
+let chat=JSON.parse(localStorage.getItem(KEY)||"[]");
+const $=id=>document.getElementById(id), messages=$("messages"), welcome=$("welcome"), input=$("input"), form=$("form");
+
+function save(){localStorage.setItem(KEY,JSON.stringify(chat))}
+function bubble(role,text){
+ const row=document.createElement("div");row.className="message "+role;
+ const av=document.createElement("div");av.className="avatar";av.textContent=role==="user"?"Você":"D";
+ const b=document.createElement("div");b.className="bubble";b.textContent=text;
+ row.append(av,b);messages.appendChild(row);messages.scrollTop=messages.scrollHeight;
+}
+function render(){messages.innerHTML="";welcome.classList.toggle("hidden",chat.length>0);chat.forEach(x=>bubble(x.role,x.content))}
+function reply(text){
+ const t=text.toLowerCase();
+ if(/^(oi|olá|ola|hey|eai|e aí)/.test(t)) return "Oi! Pode ficar à vontade. O que você gostaria de desabafar comigo?";
+ if(/(triste|chor|sozinh|mal|pra baixo|desanim)/.test(t)) return "Entendo. Parece que isso está pesando bastante para você. Às vezes colocar tudo em palavras já ajuda a organizar um pouco o que estamos sentindo. Quer me contar o que aconteceu?";
+ if(/(ansios|ansiedade|nervos|preocup|medo|apreens)/.test(t)) return "Faz sentido você estar preocupado(a) com isso. Tente separar o que está sob seu controle do que não está e lidar com uma coisa de cada vez. Se quiser, me conte qual é a parte que mais está te preocupando.";
+ if(/(briga|brig|discuss|amig|amizade)/.test(t)) return "Conflitos com pessoas importantes podem mexer bastante com a gente. Antes de decidir o que fazer, pode ajudar pensar no que você gostaria que a outra pessoa entendesse. O que aconteceu entre vocês?";
+ if(/(escola|prova|nota|professor|estudo)/.test(t)) return "Pressão na escola pode ser cansativa. Tente olhar para o problema em partes, em vez de resolver tudo de uma vez. Se você me contar o que está acontecendo, posso ajudar a pensar em um próximo passo.";
+ if(/(conselho|o que faço|oq faço|que fazer)/.test(t)) return "Claro. Vamos pensar juntos. Primeiro, me conta um pouco mais sobre a situação e o que você gostaria que acontecesse.";
+ if(text.length<25) return "Estou te ouvindo. Pode falar mais sobre isso — não precisa organizar tudo perfeitamente antes de escrever.";
+ return "Obrigado por confiar esse desabafo aqui. Pelo que você contou, parece que isso está ocupando bastante espaço na sua cabeça. Uma coisa que pode ajudar é separar o que aconteceu, como você se sentiu e o que você gostaria de fazer agora. Se quiser, me conta mais detalhes e eu penso nisso com você.";
+}
+form.addEventListener("submit",e=>{e.preventDefault();let text=input.value.trim();if(!text)return;chat.push({role:"user",content:text});bubble("user",text);save();welcome.classList.add("hidden");input.value="";resize();setTimeout(()=>{let r=reply(text);chat.push({role:"assistant",content:r});bubble("assistant",r);save()},450)});
+input.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();form.requestSubmit()}});
+input.addEventListener("input",resize);function resize(){input.style.height="auto";input.style.height=Math.min(input.scrollHeight,140)+"px"}
+document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{input.value=b.dataset.t;input.focus();resize()});
+$("clear").onclick=()=>{if(chat.length&&confirm("Apagar toda a conversa?")){chat=[];save();render()}};
+render();input.focus();
+</script>
+</body>
+</html>
